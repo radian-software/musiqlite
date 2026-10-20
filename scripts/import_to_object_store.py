@@ -23,16 +23,25 @@ parser.add_argument("object_store_dir")
 # copy of the library on the main SSD. Hardlinks of course cannot be
 # cross-device, though, hence the need for two dirs.
 parser.add_argument("--reference-input-dir", default="")
+# This argument is a quick hack to let you pick up where a previous
+# run crashed. It exists to save time.
+parser.add_argument("--start-from", default="")
 args = parser.parse_args()
 
 input_dir = Path(args.input_dir).resolve()
 reference_input_dir = (
     Path(args.reference_input_dir) if args.reference_input_dir else None
 )
+start_from_path = Path(args.start_from).resolve() if args.start_from else None
 object_store_dir = Path(args.object_store_dir).resolve()
 objects_dir = object_store_dir / "objects"
 
+has_started = start_from_path is None
 for path in walk_tree(input_dir):
+    if not has_started:
+        if path != start_from_path:
+            continue
+        has_started = True
     if not path.is_file():
         if path.is_dir():
             print(f"importing: {path} ...")
@@ -50,6 +59,8 @@ for path in walk_tree(input_dir):
     prefix, suffix = digest[:2], digest[2:]
     object_path = objects_dir / prefix / suffix
     object_path.parent.mkdir(parents=True, exist_ok=True)
+    if object_path.is_file():
+        object_path.unlink()
     object_path.hardlink_to(path)
 
 print("finished.")
