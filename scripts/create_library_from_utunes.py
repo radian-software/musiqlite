@@ -156,11 +156,20 @@ INSERT INTO playlist VALUES (
   {quote(playlist_name)},
   FALSE
 );
-    """)
+    """.strip())
+    print(f"""
+WITH input(playlist_name, song_id, ordering) AS (
+  VALUES
+""".strip())
     for ordering, song_id in enumerate(song_ids, start=1):
-        print(f"""
+        print(
+            f"  ({quote(playlist_name)}, {quote(song_id)}, {ordering})"
+            + ("," if ordering < len(song_ids) else "")
+        )
+    print("""\
+)
 INSERT INTO playlist_song
-SELECT song.oid, playlist.oid, {ordering}
-FROM (SELECT oid FROM song WHERE utunes_id = {quote(song_id)}) AS song
-CROSS JOIN (SELECT oid FROM playlist WHERE name = {quote(playlist_name)}) AS playlist;
-        """)
+SELECT song.oid, playlist.oid, input.ordering FROM input
+LEFT JOIN playlist ON playlist.name = input.playlist_name
+LEFT JOIN song ON song.utunes_id = input.song_id;
+        """.rstrip())
