@@ -150,26 +150,25 @@ INSERT INTO song VALUES (
 );
     """.strip())
 
+values = []
+for playlist_name in utunes_library["playlists"]:
+    values.append(f"({quote(playlist_name)}, FALSE)")
+print(f"""
+INSERT INTO playlist VALUES
+  {',\n  '.join(values)};
+""".strip())
+
+values = []
 for playlist_name, song_ids in utunes_library["playlists"].items():
-    print(f"""
-INSERT INTO playlist VALUES (
-  {quote(playlist_name)},
-  FALSE
-);
-    """.strip())
-    print(f"""
+    for ordering, song_id in enumerate(song_ids, start=1):
+        values.append(f"({quote(playlist_name)}, {quote(song_id)}, {ordering})")
+print(f"""
 WITH input(playlist_name, song_id, ordering) AS (
   VALUES
-""".strip())
-    for ordering, song_id in enumerate(song_ids, start=1):
-        print(
-            f"  ({quote(playlist_name)}, {quote(song_id)}, {ordering})"
-            + ("," if ordering < len(song_ids) else "")
-        )
-    print("""\
+  {',\n  '.join(values)}
 )
 INSERT INTO playlist_song
 SELECT song.oid, playlist.oid, input.ordering FROM input
 LEFT JOIN playlist ON playlist.name = input.playlist_name
 LEFT JOIN song ON song.utunes_id = input.song_id;
-        """.rstrip())
+""".strip())
