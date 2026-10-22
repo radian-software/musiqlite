@@ -93,6 +93,7 @@ CREATE TABLE string (
 );
 """.strip())
 
+values = []
 for song in utunes_library["songs"].values():
     get_required_string = lambda key: quote(song[key])
     get_optional_string = lambda key: (
@@ -114,41 +115,45 @@ for song in utunes_library["songs"].values():
     get_required_boolean = lambda key: (
         "TRUE" if normalize_utunes_boolean(song[key]) else "FALSE"
     )
-    print(f"""
-INSERT INTO song VALUES (
-  {get_required_string('album')}, -- album
-  {get_required_string('album_artist')}, -- album_artist
-  {get_required_string('artist')}, -- artist
-  {get_optional_string('composer')}, -- composer
-  {get_required_number('disc')}, -- disc
-  {get_optional_number('track') or 'NULL'}, -- track
-  {get_required_string('song')}, -- song
-  {get_required_number('year')}, -- year
+    values.append(f"""
+  (
+    {get_required_string('album')}, -- album
+    {get_required_string('album_artist')}, -- album_artist
+    {get_required_string('artist')}, -- artist
+    {get_optional_string('composer')}, -- composer
+    {get_required_number('disc')}, -- disc
+    {get_optional_number('track') or 'NULL'}, -- track
+    {get_required_string('song')}, -- song
+    {get_required_number('year')}, -- year
 
-  {get_sort_string('album')}, -- album_sort
-  {get_sort_string('album_artist')}, -- album_artist_sort
-  {get_sort_string('artist')}, -- artist_sort
-  {get_sort_string('composer')}, -- composer_sort
-  {get_sort_string('song')}, -- song_sort
+    {get_sort_string('album')}, -- album_sort
+    {get_sort_string('album_artist')}, -- album_artist_sort
+    {get_sort_string('artist')}, -- artist_sort
+    {get_sort_string('composer')}, -- composer_sort
+    {get_sort_string('song')}, -- song_sort
 
-  {get_object_string('filename')}, -- audio
-  {get_object_string('artwork')}, -- artwork
-  {get_index_content('filename', 'duration')}, -- duration
+    {get_object_string('filename')}, -- audio
+    {get_object_string('artwork')}, -- artwork
+    {get_index_content('filename', 'duration')}, -- duration
 
-  {get_required_boolean('acquired_illegally')}, -- acquired_illegally
-  {get_required_boolean('acquired_legally')}, -- acquired_legally
-  {get_required_boolean('as_bundle')}, -- as_bundle
-  {get_required_boolean('as_gift')}, -- as_gift
-  {get_optional_number('min_price')}, -- min_price
-  {get_optional_number('paid')}, -- paid
-  {get_required_string('date')}, -- date
-  {get_required_string('source')}, -- source
-  {get_optional_string('refined_source')}, -- refined_source
-  {get_optional_string('tracklist')}, -- tracklist
-  {get_optional_string('group_id')}, -- group_id
-  {get_required_string('id')} -- utunes_id
-);
+    {get_required_boolean('acquired_illegally')}, -- acquired_illegally
+    {get_required_boolean('acquired_legally')}, -- acquired_legally
+    {get_required_boolean('as_bundle')}, -- as_bundle
+    {get_required_boolean('as_gift')}, -- as_gift
+    {get_optional_number('min_price')}, -- min_price
+    {get_optional_number('paid')}, -- paid
+    {get_required_string('date')}, -- date
+    {get_required_string('source')}, -- source
+    {get_optional_string('refined_source')}, -- refined_source
+    {get_optional_string('tracklist')}, -- tracklist
+    {get_optional_string('group_id')}, -- group_id
+    {get_required_string('id')} -- utunes_id
+  )
     """.strip())
+print(f"""
+INSERT INTO song VALUES
+  {',\n  '.join(values)};
+""".strip())
 
 values = []
 for playlist_name in utunes_library["playlists"]:
