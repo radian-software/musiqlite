@@ -6,7 +6,7 @@ export default function App() {
     (async () => {
       try {
         const resp = await fetch(
-          `http://localhost:8080/api/v0/groups?partition=album&tag=album_artist&tag=artwork`,
+          `http://localhost:8080/api/v0/groups?partition=album&sort=album&tag=album_artist&tag=artwork`,
         );
         if (!resp.ok) {
           throw new Error(`HTTP ${resp.status} ${resp.statusText}`);

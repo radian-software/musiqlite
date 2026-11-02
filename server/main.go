@@ -101,6 +101,12 @@ func (s *Server) handleGetGroups(w http.ResponseWriter, r *http.Request) error {
 		return clientError(errors.New("missing query parameter: partition"), http.StatusBadRequest)
 	}
 	includedTags := r.URL.Query()["tag"]
+	for _, tag := range includedTags {
+		if tag == "" {
+			return clientError(errors.New("empty tag name"), http.StatusBadRequest)
+		}
+	}
+	sort := r.URL.Query().Get("sort")
 	rows, err := s.DB.QueryContext(r.Context(), fmt.Sprintf("SELECT %[1]s, COUNT(*) FROM song GROUP BY %[1]s", quoteDouble(partition)))
 	if err != nil {
 		return fmt.Errorf("query db for counting songs by partition: %w", err)
@@ -134,8 +140,8 @@ func (s *Server) handleGetGroups(w http.ResponseWriter, r *http.Request) error {
 	if err := rows.Err(); err != nil {
 		return fmt.Errorf("scan from db for listing song tag names: %w", err)
 	}
-	for _, tagName := range append(includedTags, partition) {
-		if !allowedTagNames[tagName] {
+	for _, tagName := range append(includedTags, partition, sort) {
+		if tagName != "" && !allowedTagNames[tagName] {
 			return clientError(fmt.Errorf("requested tag does not exist: %s", partition), http.StatusUnprocessableEntity)
 		}
 	}
@@ -152,7 +158,11 @@ func (s *Server) handleGetGroups(w http.ResponseWriter, r *http.Request) error {
 			queryPart4s = append(queryPart4s, fmt.Sprintf("FIRST_VALUE(%[1]s) OVER (PARTITION BY %[2]s ORDER BY %[3]s DESC), %[3]s", quoteDouble(name), quoteDouble(partition), quoteDouble("_"+name+"_count")))
 		}
 		queryPart5 := " FROM cte"
-		query := queryPart1 + strings.Join(queryPart2s, ", ") + queryPart3 + strings.Join(queryPart4s, ", ") + queryPart5
+		queryPart6 := ""
+		if sort != "" {
+			queryPart6 = fmt.Sprintf(" ORDER BY %s COLLATE NOCASE ASC", quoteDouble(sort))
+		}
+		query := queryPart1 + strings.Join(queryPart2s, ", ") + queryPart3 + strings.Join(queryPart4s, ", ") + queryPart5 + queryPart6
 		rows, err = s.DB.QueryContext(r.Context(), query)
 		if err != nil {
 			return fmt.Errorf("query db for counting tags within partitions: %w", err)
