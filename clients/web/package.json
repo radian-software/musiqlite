@@ -1,0 +1,22 @@
+{
+  "name": "musiqlite-web-client",
+  "version": "0.1.0",
+  "description": "MusiQLite default client using HTML, CSS, JavaScript",
+  "author": "Radian LLC <contact+musiqlite@radian.codes>",
+  "license": "MIT",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.15.0",
+      "onFail": "download"
+    }
+  },
+  "packageManager": "pnpm@12.15.0",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "vite": "^8.3.5"
+  }
+}
