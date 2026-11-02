@@ -3,6 +3,7 @@
 import argparse
 import json
 from pathlib import Path
+from typing import Any
 
 
 def quote(text: str) -> str:
@@ -16,6 +17,27 @@ def normalize_utunes_boolean(boolean: str) -> bool:
         case "no":
             return False
     raise RuntimeError(f"Unsupported boolean value: {boolean}")
+
+
+def format_index_prop(key: str, val: Any) -> str:
+    match key:
+        case "width" | "height":
+            return str(val)
+        case "duration":
+            return f"{val:.3f}"
+    raise RuntimeError(f"Unsupported index property: {key}")
+
+
+def get_normalized_extension(filename: str) -> str:
+    match Path(filename).suffix:
+        case ".png":
+            return "png"
+        case ".jpg" | ".jpeg":
+            return "jpg"
+        case ".mp3":
+            return "mp3"
+        case suffix:
+            raise RuntimeError(f"Unsupported file format {suffix} in {filename}")
 
 
 parser = argparse.ArgumentParser("create_library_from_utunes")
@@ -53,7 +75,6 @@ CREATE TABLE song (
   -- content
   audio,
   artwork,
-  duration,
 
   -- informational
   acquired_illegally,
@@ -108,10 +129,9 @@ for song in utunes_library["songs"].values():
         if (song.get(f"{key}_sort") in (None, song.get(key)))
         else quote(song.get(f"{key}_sort"))
     )
-    get_object_string = lambda key: quote(
-        f"blob:{utunes_content_index[song[key]]['size']}:{utunes_content_index[song[key]]['digest']}"
+    get_object_string = lambda key, *props: quote(
+        f"blob:{utunes_content_index[song[key]]['size']}:{utunes_content_index[song[key]]['digest']}:type={get_normalized_extension(song[key])},{','.join(prop + '=' + format_index_prop(prop, utunes_content_index[song[key]][prop]) for prop in props)}"
     )
-    get_index_content = lambda key, prop: utunes_content_index[song[key]][prop]
     get_required_boolean = lambda key: (
         "TRUE" if normalize_utunes_boolean(song[key]) else "FALSE"
     )
@@ -132,9 +152,8 @@ for song in utunes_library["songs"].values():
     {get_sort_string('composer')}, -- composer_sort
     {get_sort_string('song')}, -- song_sort
 
-    {get_object_string('filename')}, -- audio
-    {get_object_string('artwork')}, -- artwork
-    {get_index_content('filename', 'duration')}, -- duration
+    {get_object_string('filename', 'duration')}, -- audio
+    {get_object_string('artwork', 'width', 'height')}, -- artwork
 
     {get_required_boolean('acquired_illegally')}, -- acquired_illegally
     {get_required_boolean('acquired_legally')}, -- acquired_legally

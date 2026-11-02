@@ -120,15 +120,6 @@ underscore, which is a disallowed prefix for user-defined tags. One
 such virtual tag is `_id`, which is a UUID identifying the song as a
 unique object; others are discussed later.
 
-Values can also be strings of the form `blob:<length>:<sha256sum>` to
-reference a blob stored in the file storage. So, the album artwork and
-audio data of a song are both represented as tags, and the usage of a
-shared file storage means that many songs with the same album artwork
-need not consume any additional space to store copies of that artwork.
-(As an advanced use case, multiple copies of the same song could
-appear under different names and metadata, without consuming extra
-storage space.)
-
 The user interface can treat certain tags specially, based on your
 configuration, for example to group songs into albums, show their
 artwork, and display them in order by disc and track.
@@ -182,6 +173,24 @@ by most recently listened to on a specific device:
 
 Or for playlists, you can filter on membership, but only using unique
 identifier of the playlist: `?filter-_playlist_member_<id>=yes`.
+
+## File storage
+
+Tag values, in any field, can also be strings of the form
+`blob:<length>:<sha256sum>:<detail>` to reference a blob stored in the
+file storage. So, the album artwork and audio data of a song are both
+represented as tags, and the usage of a shared file storage means that
+many songs with the same album artwork need not consume any additional
+space to store copies of that artwork. (As an advanced use case,
+multiple copies of the same song could appear under different names
+and metadata, without consuming extra storage space.)
+
+The `<detail>` field is a key-value mapping that specifies additional
+information about the file content. The required key is `type`, and
+other keys may be required based on the type. For example:
+
+* `type=png,width=1400,height=1400`
+* `type=mp3,duration=208.397`
 
 ## API route examples
 
