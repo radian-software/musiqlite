@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router";
 
 const parseBlob = (blob) => {
   const [_, size, digest, propsList] = blob.split(":");
@@ -35,20 +36,21 @@ export default function AlbumsPage() {
       <div className="page-header">MusiQLite - Albums</div>
       <div className="cards">
         {albumsData.value.map((albumData) => {
+          const albumName = albumData.partition_tag_value;
           const artwork = parseBlob(
             albumData.tag_values.artwork.most_common_value,
           );
           const artworkFilename = `${artwork.digest}.${artwork.props.type}`;
           return (
-            <div className="card" key={albumData.partition_tag_value}>
-              <img
-                className="card-picture"
-                src={`http://localhost:8080/api/v0/media/${artworkFilename}`}
-              />
-              <div className="card-caption">
-                {albumData.partition_tag_value}
+            <Link to={`/album/${albumName}`}>
+              <div className="card" key={albumName}>
+                <img
+                  className="card-picture"
+                  src={`http://localhost:8080/api/v0/media/${artworkFilename}`}
+                />
+                <div className="card-caption">{albumName}</div>
               </div>
-            </div>
+            </Link>
           );
         })}
       </div>
