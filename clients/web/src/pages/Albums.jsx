@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router";
+
+import { useFetchJSON } from "../util";
 
 const parseBlob = (blob) => {
   const [_, size, digest, propsList] = blob.split(":");
@@ -12,30 +13,14 @@ const parseBlob = (blob) => {
 };
 
 export default function AlbumsPage() {
-  const [albumsData, setAlbumsData] = useState(null);
-  useEffect(() => {
-    (async () => {
-      try {
-        const resp = await fetch(
-          `http://localhost:8080/api/v0/groups?partition=album&sort=album&tag=album_artist&tag=artwork`,
-        );
-        if (!resp.ok) {
-          throw new Error(`HTTP ${resp.status} ${resp.statusText}`);
-        }
-        setAlbumsData({ value: await resp.json() });
-      } catch (error) {
-        setAlbumsData({ error });
-      }
-    })();
-  }, []);
-  if (albumsData === null) return <>Loading albums...</>;
-  if (albumsData.error)
-    return <>Failed to load albums: {albumsData.error.toString()}</>;
+  const albums = useFetchJSON(
+    `/api/v0/groups?partition=album&sort=album&tag=album_artist&tag=artwork`,
+  );
   return (
     <>
       <div className="page-header">MusiQLite - Albums</div>
       <div className="cards">
-        {albumsData.value.map((albumData) => {
+        {albums.map((albumData) => {
           const albumName = albumData.partition_tag_value;
           const artwork = parseBlob(
             albumData.tag_values.artwork.most_common_value,
@@ -43,8 +28,8 @@ export default function AlbumsPage() {
           // Thumbnails are always jpeg
           const artworkFilename = `${artwork.digest}.jpg?w=300`;
           return (
-            <Link to={`/album/${albumName}`}>
-              <div className="card" key={albumName}>
+            <Link to={`/album/${albumName}`} key={albumName}>
+              <div className="card">
                 <img
                   className="card-picture"
                   src={`http://localhost:8080/api/v0/media/${artworkFilename}`}
