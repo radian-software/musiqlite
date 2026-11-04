@@ -37,21 +37,9 @@ func (s *Server) handleGetGroups(w http.ResponseWriter, r *http.Request) error {
 	if err := rows.Err(); err != nil {
 		return fmt.Errorf("scan from db for counting songs by partition: %w", err)
 	}
-	rows, err = s.DB.QueryContext(r.Context(), "SELECT name FROM pragma_table_info('song')")
+	allowedTagNames, err := s.getAllowedTagNames(r.Context())
 	if err != nil {
-		return fmt.Errorf("query db for listing song tag names: %w", err)
-	}
-	allowedTagNames := map[string]bool{}
-	for rows.Next() {
-		var name string
-		err := rows.Scan(&name)
-		if err != nil {
-			return fmt.Errorf("scan from db for listing song tag names: %w", err)
-		}
-		allowedTagNames[name] = true
-	}
-	if err := rows.Err(); err != nil {
-		return fmt.Errorf("scan from db for listing song tag names: %w", err)
+		return err
 	}
 	for _, tagName := range append(includedTags, partition, sort) {
 		if tagName != "" && !allowedTagNames[tagName] {

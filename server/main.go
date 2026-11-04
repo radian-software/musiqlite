@@ -20,6 +20,12 @@ type Server struct {
 	DB        *sql.DB
 	ObjectDir string
 	Log       *log.Logger
+
+	cacheData serverCacheData
+}
+
+type serverCacheData struct {
+	AllowedTagNames map[string]bool
 }
 
 func (s *Server) Serve(ctx context.Context, addr string) error {
