@@ -26,3 +26,13 @@ export const useFetchJSON = (urlpath) => {
   }
   return use(useFetchCache[urlpath]);
 };
+
+export const parseBlob = (blob) => {
+  const [_, size, digest, propsList] = blob.split(":");
+  const props = {};
+  for (const propEntry of propsList.split(",")) {
+    const [key, val] = propEntry.split("=");
+    props[key] = val;
+  }
+  return { size, digest, props };
+};

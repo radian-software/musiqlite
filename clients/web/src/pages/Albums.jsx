@@ -1,16 +1,6 @@
 import { Link } from "react-router";
 
-import { useFetchJSON } from "../util";
-
-const parseBlob = (blob) => {
-  const [_, size, digest, propsList] = blob.split(":");
-  const props = {};
-  for (const propEntry of propsList.split(",")) {
-    const [key, val] = propEntry.split("=");
-    props[key] = val;
-  }
-  return { size, digest, props };
-};
+import { parseBlob, useFetchJSON } from "../util";
 
 export default function AlbumsPage() {
   const albums = useFetchJSON(
