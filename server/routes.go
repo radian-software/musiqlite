@@ -12,6 +12,7 @@ func (s *Server) getHandler() http.Handler {
 	mux.HandleFunc("/api/v0/media/{filename}", s.wrapRequestHandler(s.handleGetMedia))
 	mux.HandleFunc("/api/v0/albums", s.wrapRequestHandler(s.handleGetAlbums))
 	mux.HandleFunc("/api/v0/groups", s.wrapRequestHandler(s.handleGetGroups))
+	mux.HandleFunc("/api/v0/songs", s.wrapRequestHandler(s.handleGetSongs))
 	return mux
 }
 
