@@ -37,6 +37,7 @@ func (s *Server) handleGetMedia(w http.ResponseWriter, r *http.Request) error {
 	}
 	w.Header().Set("content-type", mimeType)
 	w.Header().Set("content-length", fmt.Sprintf("%d", st.Size()))
+	w.Header().Set("cache-control", "max-age=31536000, immutable")
 	_, err = io.Copy(w, file)
 	if err != nil {
 		s.Log.Printf("Error while writing media response: %s", err.Error())
