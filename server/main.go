@@ -7,11 +7,15 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"log"
+	"mime"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
+	"path"
+	"regexp"
 	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -26,12 +30,14 @@ func quoteDouble(text string) string {
 }
 
 type Server struct {
-	DB  *sql.DB
-	Log *log.Logger
+	DB        *sql.DB
+	ObjectDir string
+	Log       *log.Logger
 }
 
 func (s *Server) Serve(ctx context.Context, addr string) error {
 	mux := http.NewServeMux()
+	mux.HandleFunc("/api/v0/media/{filename}", s.wrapRequestHandler(s.handleGetMedia))
 	mux.HandleFunc("/api/v0/albums", s.wrapRequestHandler(s.handleGetAlbums))
 	mux.HandleFunc("/api/v0/groups", s.wrapRequestHandler(s.handleGetGroups))
 	server := &http.Server{Addr: addr, Handler: mux}
@@ -93,6 +99,40 @@ func (s *Server) wrapRequestHandler(handler func(http.ResponseWriter, *http.Requ
 			return
 		}
 	}
+}
+
+var validMediaRegexp = regexp.MustCompile(`^([a-z0-9]{8,128})(\.[a-z0-9]{2,4})$`)
+
+func (s *Server) handleGetMedia(w http.ResponseWriter, r *http.Request) error {
+	mediaFilename := r.PathValue("filename")
+	mediaFilenameMatch := validMediaRegexp.FindStringSubmatch(mediaFilename)
+	if mediaFilenameMatch == nil {
+		return clientError(fmt.Errorf("not a valid media filename: %s", mediaFilename), http.StatusBadRequest)
+	}
+	digest, ext := mediaFilenameMatch[1], mediaFilenameMatch[2]
+	objectPath := path.Join(s.ObjectDir, digest[:2], digest[2:])
+	file, err := os.Open(objectPath)
+	if os.IsNotExist(err) {
+		return clientError(fmt.Errorf("no such media: %s", digest), http.StatusNotFound)
+	} else if err != nil {
+		return err
+	}
+	defer file.Close()
+	st, err := file.Stat()
+	if err != nil {
+		return err
+	}
+	mimeType := mime.TypeByExtension(ext)
+	if mimeType == "" {
+		return clientError(fmt.Errorf("unsupported file extension: %s", ext), http.StatusBadRequest)
+	}
+	w.Header().Set("content-type", mimeType)
+	w.Header().Set("content-length", fmt.Sprintf("%d", st.Size()))
+	_, err = io.Copy(w, file)
+	if err != nil {
+		s.Log.Printf("Error while writing media response: %s", err.Error())
+	}
+	return nil
 }
 
 func (s *Server) handleGetGroups(w http.ResponseWriter, r *http.Request) error {
@@ -235,6 +275,7 @@ func (s *Server) handleGetAlbums(w http.ResponseWriter, r *http.Request) error {
 func mainE() error {
 	// Do the command-line argument parsing
 	dbFile := flag.String("db", "library.sqlite3", "path to sqlite database")
+	filestore := flag.String("filestore", "filestore", "path to object store directory")
 	addr := flag.String("addr", ":8080", "host and port to listen for http on")
 	flag.Parse()
 
@@ -248,6 +289,14 @@ func mainE() error {
 	}
 	defer db.Close()
 
+	// Verify the object store
+	objDir := path.Join(*filestore, "objects")
+	if stat, err := os.Stat(objDir); err != nil {
+		return err
+	} else if !stat.IsDir() {
+		return fmt.Errorf("not a directory: %s", objDir)
+	}
+
 	// Set up a context that will be canceled on signal
 	ctx, stop := context.WithCancelCause(context.Background())
 	defer stop(errors.New("application closing"))
@@ -260,8 +309,9 @@ func mainE() error {
 
 	// Create the server struct
 	s := &Server{
-		DB:  db,
-		Log: log.Default(),
+		DB:        db,
+		ObjectDir: objDir,
+		Log:       log.Default(),
 	}
 
 	// Start handling requests
