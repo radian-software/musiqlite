@@ -40,7 +40,8 @@ export default function AlbumsPage() {
           const artwork = parseBlob(
             albumData.tag_values.artwork.most_common_value,
           );
-          const artworkFilename = `${artwork.digest}.${artwork.props.type}`;
+          // Thumbnails are always jpeg
+          const artworkFilename = `${artwork.digest}.jpg?w=300`;
           return (
             <Link to={`/album/${albumName}`}>
               <div className="card" key={albumName}>

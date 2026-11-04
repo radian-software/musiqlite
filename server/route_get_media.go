@@ -8,19 +8,45 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"strconv"
 )
 
 var validMediaRegexp = regexp.MustCompile(`^([a-z0-9]{8,128})(\.[a-z0-9]{2,4})$`)
 
 func (s *Server) handleGetMedia(w http.ResponseWriter, r *http.Request) error {
+	var err error
 	mediaFilename := r.PathValue("filename")
 	mediaFilenameMatch := validMediaRegexp.FindStringSubmatch(mediaFilename)
 	if mediaFilenameMatch == nil {
 		return clientError(fmt.Errorf("not a valid media filename: %s", mediaFilename), http.StatusBadRequest)
 	}
 	digest, ext := mediaFilenameMatch[1], mediaFilenameMatch[2]
-	objectPath := path.Join(s.ObjectDir, digest[:2], digest[2:])
-	file, err := os.Open(objectPath)
+	widthStr := r.URL.Query().Get("w")
+	width := 0
+	if widthStr != "" {
+		width, err = strconv.Atoi(widthStr)
+		if err != nil || width <= 0 || width > 32768 {
+			return clientError(fmt.Errorf("not a valid width: %s", widthStr), http.StatusBadRequest)
+		}
+		if ext != ".jpg" && ext != ".jpeg" {
+			return clientError(fmt.Errorf("cannot specify width for non-jpeg format: %s", ext), http.StatusUnprocessableEntity)
+		}
+	}
+	objectPath := path.Join(s.FilestoreDir, "objects", digest[:2], digest[2:])
+	thumbnailPath := path.Join(s.FilestoreDir, "thumbnails", fmt.Sprintf("%05d", width), digest[:2], digest[2:])
+	var file *os.File
+	if width > 0 {
+		file, err = os.Open(thumbnailPath)
+		if os.IsNotExist(err) {
+			err := s.generateThumbnail(objectPath, thumbnailPath, width)
+			if err != nil {
+				return fmt.Errorf("generating thumbnail: %w", err)
+			}
+		}
+		file, err = os.Open(thumbnailPath)
+	} else {
+		file, err = os.Open(objectPath)
+	}
 	if os.IsNotExist(err) {
 		return clientError(fmt.Errorf("no such media: %s", digest), http.StatusNotFound)
 	} else if err != nil {

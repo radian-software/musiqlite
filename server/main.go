@@ -12,20 +12,26 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"sync"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
 type Server struct {
-	DB        *sql.DB
-	ObjectDir string
-	Log       *log.Logger
+	DB           *sql.DB
+	FilestoreDir string
+	Log          *log.Logger
 
 	cacheData serverCacheData
+	lockData  serverLockData
 }
 
 type serverCacheData struct {
 	AllowedTagNames map[string]bool
+}
+
+type serverLockData struct {
+	ThumbnailLocks sync.Map
 }
 
 func (s *Server) Serve(ctx context.Context, addr string) error {
@@ -46,7 +52,7 @@ func (s *Server) Serve(ctx context.Context, addr string) error {
 func mainE() error {
 	// Do the command-line argument parsing
 	dbFile := flag.String("db", "library.sqlite3", "path to sqlite database")
-	filestore := flag.String("filestore", "filestore", "path to object store directory")
+	filestoreDir := flag.String("filestore", "filestore", "path to filestore directory")
 	addr := flag.String("addr", ":8080", "host and port to listen for http on")
 	flag.Parse()
 
@@ -60,8 +66,8 @@ func mainE() error {
 	}
 	defer db.Close()
 
-	// Verify the object store
-	objDir := path.Join(*filestore, "objects")
+	// Verify the filestore looks right
+	objDir := path.Join(*filestoreDir, "objects")
 	if stat, err := os.Stat(objDir); err != nil {
 		return err
 	} else if !stat.IsDir() {
@@ -80,9 +86,9 @@ func mainE() error {
 
 	// Create the server struct
 	s := &Server{
-		DB:        db,
-		ObjectDir: objDir,
-		Log:       log.Default(),
+		DB:           db,
+		FilestoreDir: *filestoreDir,
+		Log:          log.Default(),
 	}
 
 	// Start handling requests
