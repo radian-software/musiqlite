@@ -1,9 +1,22 @@
 import { use } from "react";
 
-export const fetchJSON = async (urlpath) => {
+export const fetchJSON = async (urlpath, params) => {
   if (!urlpath.startsWith("/"))
     throw new Error(`fetchJSON urlpath does not start with slash`);
-  const resp = await fetch("http://localhost:8080" + urlpath);
+  let url = "http://localhost:8080" + urlpath;
+  if (params) {
+    const query = new URLSearchParams();
+    for (let [key, vals] of Object.entries(params)) {
+      if (!Array.isArray(vals)) {
+        vals = [vals];
+      }
+      for (const val of vals) {
+        query.append(key, val);
+      }
+    }
+    url += "?" + query.toString();
+  }
+  const resp = await fetch(url);
   let data;
   try {
     data = await resp.json();
@@ -20,9 +33,9 @@ export const fetchJSON = async (urlpath) => {
 };
 
 const useFetchCache = {};
-export const useFetchJSON = (urlpath) => {
+export const useFetchJSON = (urlpath, params) => {
   if (!useFetchCache[urlpath]) {
-    useFetchCache[urlpath] = fetchJSON(urlpath);
+    useFetchCache[urlpath] = fetchJSON(urlpath, params);
   }
   return use(useFetchCache[urlpath]);
 };

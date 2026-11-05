@@ -3,9 +3,11 @@ import { Link } from "react-router";
 import { parseBlob, useFetchJSON } from "../util";
 
 export default function AlbumsPage() {
-  const albums = useFetchJSON(
-    `/api/v0/groups?partition=album&sort=album&tag=album_artist&tag=artwork`,
-  );
+  const albums = useFetchJSON("/api/v0/groups", {
+    partition: "album",
+    sort: "album",
+    tag: ["album_artist", "artwork"],
+  });
   return (
     <>
       <div className="page-header">MusiQLite - Albums</div>
