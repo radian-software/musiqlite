@@ -31,3 +31,27 @@ body {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+.list-rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.list-row {
+  height: 1.5lh;
+  max-width: 500px;
+}
+
+.album-song-list-row {
+  display: flex;
+}
+
+.album-song-list-row-track {
+  width: 35px;
+  text-align: end;
+  margin-right: 10px;
+}
+
+.album-song-list-row-duration {
+  margin-left: auto;
+}

@@ -16,8 +16,10 @@ export default function AlbumPage() {
           const audio = parseBlob(songData.audio);
           const duration = formatDuration(audio.props.duration);
           return (
-            <div className="list-row" key={songData.oid}>
-              {songData.track} {songData.song} {duration}
+            <div className="list-row album-song-list-row" key={songData.oid}>
+              <div className="album-song-list-row-track">{songData.track}</div>
+              <div className="album-song-list-row-song">{songData.song}</div>
+              <div className="album-song-list-row-duration">{duration}</div>
             </div>
           );
         })}
