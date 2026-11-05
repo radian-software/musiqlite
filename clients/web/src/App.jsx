@@ -1,5 +1,4 @@
 import { Component, Suspense } from "react";
-import { Outlet } from "react-router";
 import Player from "./Player";
 
 class ErrorBoundary extends Component {
@@ -20,12 +19,17 @@ class ErrorBoundary extends Component {
   }
 }
 
-export default function App() {
+export default function App({ page }) {
   return (
     <ErrorBoundary>
       <Suspense fallback="Loading page...">
         <div className="page">
-          <Outlet />
+          <div className="page-header">
+            MusiQLite &ndash; <page.Title />
+          </div>
+          <div className="page-content">
+            <page.Content />
+          </div>
           <div className="page-footer">
             <Player />
           </div>

@@ -10,10 +10,8 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<App />}>
-          <Route index element={<AlbumsPage />} />
-          <Route path="album/:albumName" element={<AlbumPage />} />
-        </Route>
+        <Route index element={<App page={AlbumsPage} />} />
+        <Route path="album/:albumName" element={<App page={AlbumPage} />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,
