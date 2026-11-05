@@ -9,10 +9,11 @@ import (
 
 func (s *Server) getHandler() http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/api/v0/media/{filename}", s.wrapRequestHandler(s.handleGetMedia))
-	mux.HandleFunc("/api/v0/albums", s.wrapRequestHandler(s.handleGetAlbums))
-	mux.HandleFunc("/api/v0/groups", s.wrapRequestHandler(s.handleGetGroups))
-	mux.HandleFunc("/api/v0/songs", s.wrapRequestHandler(s.handleGetSongs))
+	mux.HandleFunc("GET /api/v0/media/{filename}", s.wrapRequestHandler(s.handleGetMedia))
+	mux.HandleFunc("GET /api/v0/albums", s.wrapRequestHandler(s.handleGetAlbums))
+	mux.HandleFunc("GET /api/v0/groups", s.wrapRequestHandler(s.handleGetGroups))
+	mux.HandleFunc("GET /api/v0/songs", s.wrapRequestHandler(s.handleGetSongs))
+	mux.HandleFunc("PUT /api/v0/playlist", s.wrapRequestHandler(s.handlePutPlaylist))
 	return mux
 }
 
