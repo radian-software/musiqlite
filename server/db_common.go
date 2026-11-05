@@ -32,6 +32,7 @@ func (s *Server) getAllowedTagNames(ctx context.Context) (map[string]bool, error
 		if err := rows.Err(); err != nil {
 			return nil, fmt.Errorf("scan from db for listing song tag names: %w", err)
 		}
+		allowedTagNames["oid"] = true
 		s.cacheData.AllowedTagNames = allowedTagNames
 	}
 	return s.cacheData.AllowedTagNames, nil

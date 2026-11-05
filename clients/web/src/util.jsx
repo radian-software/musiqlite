@@ -49,3 +49,18 @@ export const parseBlob = (blob) => {
   }
   return { size, digest, props };
 };
+
+export const formatDuration = (totalSeconds) => {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds / 60) % 60);
+  const seconds = Math.floor(totalSeconds % 60);
+  const parts = [];
+  if (hours > 0) {
+    parts.push(hours);
+    parts.push(("00" + minutes).slice(-2));
+  } else {
+    parts.push(minutes);
+  }
+  parts.push(("00" + seconds).slice(-2));
+  return parts.join(":");
+};
