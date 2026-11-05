@@ -1,5 +1,6 @@
 import { Component, Suspense } from "react";
 import { Outlet } from "react-router";
+import Player from "./Player";
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -23,7 +24,12 @@ export default function App() {
   return (
     <ErrorBoundary>
       <Suspense fallback="Loading page...">
-        <Outlet />
+        <div className="page">
+          <Outlet />
+          <div className="page-footer">
+            <Player />
+          </div>
+        </div>
       </Suspense>
     </ErrorBoundary>
   );
