@@ -34,10 +34,11 @@ export const fetchJSON = async (urlpath, params) => {
 
 const useFetchCache = {};
 export const useFetchJSON = (urlpath, params) => {
-  if (!useFetchCache[urlpath]) {
-    useFetchCache[urlpath] = fetchJSON(urlpath, params);
+  const cacheKey = urlpath + "?" + JSON.stringify(params);
+  if (!useFetchCache[cacheKey]) {
+    useFetchCache[cacheKey] = fetchJSON(urlpath, params);
   }
-  return use(useFetchCache[urlpath]);
+  return use(useFetchCache[cacheKey]);
 };
 
 export const parseBlob = (blob) => {
