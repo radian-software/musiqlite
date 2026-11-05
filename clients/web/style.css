@@ -8,7 +8,7 @@ body {
   flex-direction: column;
 
   --header-height: 50px;
-  --footer-height: 50px;
+  --footer-height: 70px;
 }
 
 .page-header {
@@ -34,6 +34,9 @@ body {
   height: var(--footer-height);
   border-top: 1px solid lightgrey;
   box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
 }
 
 .cards {
@@ -91,4 +94,24 @@ body {
 
 .album-song-list-row-duration {
   margin-left: auto;
+}
+
+.player-button {
+  --button-size: 30px;
+
+  border: none;
+  background: none;
+  padding: 0;
+
+  margin-left: 20px;
+
+  width: var(--button-size);
+  height: var(--button-size);
+  line-height: var(--button-size);
+
+  font-size: var(--button-size);
+}
+
+.player-button-play-pause {
+  --button-size: 40px;
 }
