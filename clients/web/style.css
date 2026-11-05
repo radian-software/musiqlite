@@ -52,6 +52,14 @@ body {
   margin-right: 10px;
 }
 
+.album-song-list-row-song {
+  height: 1lh;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .album-song-list-row-duration {
   margin-left: auto;
 }
