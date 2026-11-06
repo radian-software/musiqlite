@@ -9,9 +9,9 @@ import (
 
 func queryParamBool(val string) (bool, error) {
 	switch val {
-	case "", "0", "n", "no", "off":
+	case "", "0", "n", "no", "off", "false":
 		return false, nil
-	case "1", "y", "yes", "on":
+	case "1", "y", "yes", "on", "true":
 		return true, nil
 	}
 	return false, fmt.Errorf("not a valid boolean: %s", val)

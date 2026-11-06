@@ -1,6 +1,6 @@
 import { use, useState } from "react";
 
-export const fetchJSON = async (urlpath, params) => {
+export const fetchJSON = async (urlpath, params, options) => {
   let method = "GET";
   if (/^[A-Z]+ /.test(urlpath)) {
     const idx = urlpath.indexOf(" ");
@@ -34,6 +34,14 @@ export const fetchJSON = async (urlpath, params) => {
   } catch (err) {
     throw new Error(`HTTP ${resp.status} ${resp.statusText}`);
   }
+  if (
+    data.error_code &&
+    options &&
+    options.knownErrorCodes &&
+    knownErrorCodes.includes(data.error_code)
+  ) {
+    return data;
+  }
   if (data.internal_error) {
     throw new Error(data.internal_error);
   }
@@ -44,10 +52,10 @@ export const fetchJSON = async (urlpath, params) => {
 };
 
 const useFetchCache = {};
-export const useFetchJSON = (urlpath, params) => {
+export const useFetchJSON = (urlpath, params, options) => {
   const cacheKey = urlpath + "?" + JSON.stringify(params);
   if (!useFetchCache[cacheKey]) {
-    useFetchCache[cacheKey] = fetchJSON(urlpath, params);
+    useFetchCache[cacheKey] = fetchJSON(urlpath, params, options);
   }
   return use(useFetchCache[cacheKey]);
 };

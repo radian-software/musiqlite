@@ -1,7 +1,9 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -33,7 +35,9 @@ func (s *Server) handleGetPlaylist(w http.ResponseWriter, r *http.Request) error
 	var isUpNext bool
 	var playbackPosition *int
 	err = row.Scan(&playlistOID, &isUpNext, &playbackPosition)
-	if err != nil {
+	if errors.Is(err, sql.ErrNoRows) {
+		return expectedError("no_such_playlist", "no such playlist", http.StatusNotFound)
+	} else if err != nil {
 		return fmt.Errorf("query db for playlist info: %w", err)
 	}
 	queryPart1 := "SELECT ps.oid, "

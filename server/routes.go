@@ -22,13 +22,27 @@ func (s *Server) getHandler() http.Handler {
 type returnableError struct {
 	UserMessage    string
 	InternalError  error
+	ErrorCode      string
 	HTTPStatusCode int
+}
+
+func expectedError(errorCode string, description string, httpCode int) *returnableError {
+	return &returnableError{
+		// The error itself isn't a bug in the client, but if
+		// the client fails to handle the error code and shows
+		// the error to the user, then it is a client bug.
+		UserMessage:    "An unexpected client-side error occurred. This is a bug",
+		InternalError:  fmt.Errorf("client error (%d, %s): %s", httpCode, errorCode, description),
+		ErrorCode:      errorCode,
+		HTTPStatusCode: httpCode,
+	}
 }
 
 func clientError(err error, code int) *returnableError {
 	return &returnableError{
 		UserMessage:    "An unexpected client-side error occurred. This is a bug",
 		InternalError:  fmt.Errorf("client error (%d): %w", code, err),
+		ErrorCode:      "unexpected_client_error",
 		HTTPStatusCode: code,
 	}
 }
@@ -48,6 +62,7 @@ func getReturnableError(err error) *returnableError {
 	return &returnableError{
 		UserMessage:    "An unexpected server-side error occurred. This is a bug",
 		InternalError:  fmt.Errorf("unknown error: %w", err),
+		ErrorCode:      "unexpected_server_error",
 		HTTPStatusCode: http.StatusInternalServerError,
 	}
 }
@@ -64,6 +79,7 @@ func (s *Server) wrapRequestHandler(handler func(http.ResponseWriter, *http.Requ
 			w.WriteHeader(returnErr.HTTPStatusCode)
 			json.NewEncoder(w).Encode(map[string]any{
 				"user_message":   returnErr.UserMessage,
+				"error_code":     returnErr.ErrorCode,
 				"internal_error": returnErr.InternalError.Error(),
 			})
 			return

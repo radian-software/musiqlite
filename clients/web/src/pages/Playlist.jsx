@@ -31,7 +31,7 @@ export default {
             await fetchJSON("PUT /api/v0/playlist", {
               name: "Up Next",
               is_upnext: true,
-              song: songs.map((songData) => songData.oid),
+              song: playlist.songs.map((songData) => songData.oid),
             });
           })}
         >
