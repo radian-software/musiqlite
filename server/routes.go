@@ -15,6 +15,7 @@ func (s *Server) getHandler() http.Handler {
 	mux.HandleFunc("GET /api/v0/songs", s.wrapRequestHandler(s.handleGetSongs))
 	mux.HandleFunc("PUT /api/v0/playlist", s.wrapRequestHandler(s.handlePutPlaylist))
 	mux.HandleFunc("GET /api/v0/playlists", s.wrapRequestHandler(s.handleGetPlaylists))
+	mux.HandleFunc("GET /api/v0/playlist", s.wrapRequestHandler(s.handleGetPlaylist))
 	return mux
 }
 
