@@ -28,12 +28,20 @@ func (s *Server) handleGetPlaylist(w http.ResponseWriter, r *http.Request) error
 	if len(includedTags) == 0 {
 		return clientErrorf("no tags requested")
 	}
+	row := s.DB.QueryRowContext(r.Context(), fmt.Sprintf("SELECT oid, is_upnext_playlist, playback_position FROM playlist WHERE name = %s", quoteSingle(name)))
+	var playlistOID int64
+	var isUpNext bool
+	var playbackPosition *int
+	err = row.Scan(&playlistOID, &isUpNext, &playbackPosition)
+	if err != nil {
+		return fmt.Errorf("query db for playlist info: %w", err)
+	}
 	queryPart1 := "SELECT ps.oid, "
 	queryPart2s := []string{}
 	for _, tag := range includedTags {
 		queryPart2s = append(queryPart2s, fmt.Sprintf(`s.%s`, quoteDouble(tag)))
 	}
-	queryPart3 := fmt.Sprintf(" FROM song AS s JOIN playlist_song AS ps ON s.oid = ps.song_oid JOIN playlist AS p ON ps.playlist_oid = p.oid WHERE p.name = %s", quoteSingle(name))
+	queryPart3 := fmt.Sprintf(" FROM song AS s JOIN playlist_song AS ps ON s.oid = ps.song_oid WHERE ps.playlist_oid = %d", playlistOID)
 	query := queryPart1 + strings.Join(queryPart2s, ", ") + queryPart3
 	fmt.Println(query)
 	rows, err := s.DB.QueryContext(r.Context(), query)
@@ -64,6 +72,13 @@ func (s *Server) handleGetPlaylist(w http.ResponseWriter, r *http.Request) error
 	if rows.Err() != nil {
 		return fmt.Errorf("scan from db for songs: %w", err)
 	}
-	json.NewEncoder(w).Encode(songsInfo)
+	result := map[string]any{
+		"is_upnext": isUpNext,
+		"songs":     songsInfo,
+	}
+	if isUpNext {
+		result["playback_position"] = playbackPosition
+	}
+	json.NewEncoder(w).Encode(result)
 	return nil
 }

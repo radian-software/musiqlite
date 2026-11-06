@@ -19,7 +19,7 @@ export default {
   Content: function PlaylistPage() {
     const handleErrors = useErrorHandling();
     const { playlistName } = useParams();
-    const songs = useFetchJSON("/api/v0/playlist", {
+    const playlist = useFetchJSON("/api/v0/playlist", {
       name: playlistName,
       tag: ["oid", "song", "track", "audio"],
     });
@@ -30,6 +30,7 @@ export default {
           onClick={handleErrors(async () => {
             await fetchJSON("PUT /api/v0/playlist", {
               name: "Up Next",
+              is_upnext: true,
               song: songs.map((songData) => songData.oid),
             });
           })}
@@ -37,7 +38,7 @@ export default {
           <FontAwesomeIcon icon={faPlay} />
         </button>
         <div className="list-rows">
-          {songs.map((songData, idx) => {
+          {playlist.songs.map((songData, idx) => {
             const audio = parseBlob(songData.audio);
             const duration = formatDuration(audio.props.duration);
             // This is reusing the same CSS of the album song list, but
