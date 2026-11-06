@@ -6,7 +6,20 @@
     <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
-    <div id="root">MusiQLite loading...</div>
+    <div id="root">Loading MusiQLite...</div>
+    <noscript>
+      <p>Your browser does not appear to support JavaScript.</p>
+      <p>
+        Unfortunately, MusiQLite requires JavaScript to function. Sorry, HTML5
+        does not provide any way to play a sequence of audio files without
+        JavaScript, otherwise I would not have added the dependency.
+      </p>
+      <style>
+        #root {
+          display: none;
+        }
+      </style>
+    </noscript>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
