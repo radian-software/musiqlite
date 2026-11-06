@@ -192,7 +192,7 @@ WITH input(playlist_name, song_id, ordering) AS (
   {',\n  '.join(values)}
 )
 INSERT INTO playlist_song
-SELECT song.oid, playlist.oid, input.ordering FROM input
+SELECT playlist.oid, song.oid, input.ordering FROM input
 LEFT JOIN playlist ON playlist.name = input.playlist_name
 LEFT JOIN song ON song.utunes_id = input.song_id;
 """.strip())
