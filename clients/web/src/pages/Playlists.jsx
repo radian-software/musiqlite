@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import { useFetchJSON } from "../util";
 
 export default {
@@ -12,7 +13,9 @@ export default {
         {playlists.map((playlistData) => {
           return (
             <div className="list-row" key={playlistData.name}>
-              <div>{playlistData.name}</div>
+              <Link to={`/playlist/${playlistData.name}`}>
+                {playlistData.name}
+              </Link>
             </div>
           );
         })}
