@@ -115,3 +115,7 @@ body {
 .player-button-play-pause {
   --button-size: 40px;
 }
+
+.page-header-navigate-up-button {
+  margin-right: 10px;
+}
