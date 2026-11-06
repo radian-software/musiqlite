@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -21,18 +20,18 @@ func queryParamBool(val string) (bool, error) {
 func (s *Server) handlePutPlaylist(w http.ResponseWriter, r *http.Request) error {
 	name := r.URL.Query().Get("name")
 	if name == "" {
-		return clientError(errors.New("no playlist name specified"), http.StatusBadRequest)
+		return clientErrorf("no playlist name specified")
 	}
 	isUpNext, err := queryParamBool(r.URL.Query().Get("is_upnext"))
 	if err != nil {
-		return clientError(fmt.Errorf("is_upnext: %w", err), http.StatusBadRequest)
+		return clientErrorf("is_upnext: %w", err)
 	}
 	oidStrings := r.URL.Query()["song"]
 	oids := []int64{}
 	for _, oidString := range oidStrings {
 		oid, err := strconv.ParseInt(oidString, 10, 64)
 		if err != nil {
-			return clientError(fmt.Errorf("not a valid song oid: %s", oidString), http.StatusBadRequest)
+			return clientErrorf("not a valid song oid: %s", oidString)
 		}
 		oids = append(oids, oid)
 	}
@@ -62,7 +61,7 @@ func (s *Server) handlePutPlaylist(w http.ResponseWriter, r *http.Request) error
 		return fmt.Errorf("oid query for new playlist somehow returned duplicates")
 	}
 	if numExisting < len(uniqueOIDs) {
-		return clientError(errors.New("one or more songs for playlist do not exist"), http.StatusNotFound)
+		return clientErrorf("one or more songs for playlist do not exist")
 	}
 	_, err = txn.ExecContext(r.Context(), fmt.Sprintf(`DELETE FROM playlist_song WHERE playlist_oid = (SELECT oid FROM playlist WHERE name = %s)`, quoteSingle(name)))
 	if err != nil {

@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -11,12 +10,12 @@ import (
 func (s *Server) handleGetGroups(w http.ResponseWriter, r *http.Request) error {
 	partition := r.URL.Query().Get("partition")
 	if partition == "" {
-		return clientError(errors.New("missing query parameter: partition"), http.StatusBadRequest)
+		return clientErrorf("missing query parameter: partition")
 	}
 	includedTags := r.URL.Query()["tag"]
 	for _, tag := range includedTags {
 		if tag == "" {
-			return clientError(errors.New("empty tag name"), http.StatusBadRequest)
+			return clientErrorf("empty tag name")
 		}
 	}
 	sort := r.URL.Query().Get("sort")
@@ -43,7 +42,7 @@ func (s *Server) handleGetGroups(w http.ResponseWriter, r *http.Request) error {
 	}
 	for _, tagName := range append(includedTags, partition, sort) {
 		if tagName != "" && !allowedTagNames[tagName] {
-			return clientError(fmt.Errorf("requested tag does not exist: %s", partition), http.StatusUnprocessableEntity)
+			return clientErrorf("requested tag does not exist: %s", partition)
 		}
 	}
 	groups := []any{}

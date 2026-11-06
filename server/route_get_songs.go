@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -16,14 +15,14 @@ func (s *Server) handleGetSongs(w http.ResponseWriter, r *http.Request) error {
 	includedTags := r.URL.Query()["tag"]
 	for _, tag := range includedTags {
 		if tag == "" {
-			return clientError(errors.New("empty tag name"), http.StatusBadRequest)
+			return clientErrorf("empty tag name")
 		}
 		if !allowedTagNames[tag] {
-			return clientError(fmt.Errorf("requested tag does not exist: %s", tag), http.StatusUnprocessableEntity)
+			return clientErrorf("requested tag does not exist: %s", tag)
 		}
 	}
 	if len(includedTags) == 0 {
-		return clientError(errors.New("no tags requested"), http.StatusBadRequest)
+		return clientErrorf("no tags requested")
 	}
 	tagFilters := map[string]string{}
 	for key, val := range r.URL.Query() {
@@ -32,19 +31,19 @@ func (s *Server) handleGetSongs(w http.ResponseWriter, r *http.Request) error {
 		}
 		tag := strings.TrimPrefix(key, "filter-")
 		if !allowedTagNames[tag] {
-			return clientError(fmt.Errorf("requested filter tag does not exist: %s", tag), http.StatusUnprocessableEntity)
+			return clientErrorf("requested filter tag does not exist: %s", tag)
 		}
 		if len(val) < 1 {
-			return clientError(fmt.Errorf("no value for filter on tag: %s", tag), http.StatusUnprocessableEntity)
+			return clientErrorf("no value for filter on tag: %s", tag)
 		}
 		if len(val) > 1 {
-			return clientError(fmt.Errorf("more than one filter on same tag: %s", tag), http.StatusUnprocessableEntity)
+			return clientErrorf("more than one filter on same tag: %s", tag)
 		}
 		tagFilters[tag] = val[0]
 	}
 	sort := r.URL.Query().Get("sort")
 	if sort != "" && !allowedTagNames[sort] {
-		return clientError(fmt.Errorf("requested sort tag does not exist: %s", sort), http.StatusUnprocessableEntity)
+		return clientErrorf("requested sort tag does not exist: %s", sort)
 	}
 	queryPart1 := "SELECT "
 	queryPart2s := []string{}

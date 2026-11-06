@@ -32,6 +32,10 @@ func clientError(err error, code int) *returnableError {
 	}
 }
 
+func clientErrorf(format string, a ...any) *returnableError {
+	return clientError(fmt.Errorf(format, a...), http.StatusBadRequest)
+}
+
 func (h *returnableError) Error() string {
 	return h.InternalError.Error()
 }
