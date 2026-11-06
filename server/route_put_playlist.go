@@ -71,7 +71,11 @@ func (s *Server) handlePutPlaylist(w http.ResponseWriter, r *http.Request) error
 	if err != nil {
 		return fmt.Errorf("deleting existing playlist: %w", err)
 	}
-	row = txn.QueryRowContext(r.Context(), fmt.Sprintf(`INSERT INTO playlist (name, is_upnext_playlist) VALUES (%s, %t) RETURNING oid`, quoteSingle(name), isUpNext))
+	playbackPosition := "NULL"
+	if isUpNext {
+		playbackPosition = "0"
+	}
+	row = txn.QueryRowContext(r.Context(), fmt.Sprintf(`INSERT INTO playlist (name, is_upnext_playlist, playback_position) VALUES (%s, %t, %s) RETURNING oid`, quoteSingle(name), isUpNext, playbackPosition))
 	newOID := -1
 	err = row.Scan(&newOID)
 	if err != nil {

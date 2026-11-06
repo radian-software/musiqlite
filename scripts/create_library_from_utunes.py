@@ -93,7 +93,8 @@ CREATE TABLE song (
 
 CREATE TABLE playlist (
   name,
-  is_upnext_playlist
+  is_upnext_playlist,
+  playback_position
 );
 
 CREATE TABLE playlist_song (
@@ -176,7 +177,7 @@ INSERT INTO song VALUES
 
 values = []
 for playlist_name in utunes_library["playlists"]:
-    values.append(f"({quote(playlist_name)}, FALSE)")
+    values.append(f"({quote(playlist_name)}, FALSE, NULL)")
 print(f"""
 INSERT INTO playlist VALUES
   {',\n  '.join(values)};

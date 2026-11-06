@@ -1,6 +1,14 @@
-import { use } from "react";
+import { use, useState } from "react";
 
 export const fetchJSON = async (urlpath, params) => {
+  let method = "GET";
+  if (/^[A-Z]+ /.test(urlpath)) {
+    const idx = urlpath.indexOf(" ");
+    [method, urlpath] = [
+      urlpath.slice(0, idx),
+      urlpath.slice(idx + 1, urlpath.length),
+    ];
+  }
   if (!urlpath.startsWith("/"))
     throw new Error(`fetchJSON urlpath does not start with slash`);
   let url = "http://localhost:8080" + urlpath;
@@ -16,7 +24,10 @@ export const fetchJSON = async (urlpath, params) => {
     }
     url += "?" + query.toString();
   }
-  const resp = await fetch(url);
+  const resp = await fetch(url, { method });
+  if (resp.status === 204) {
+    return null;
+  }
   let data;
   try {
     data = await resp.json();
@@ -64,4 +75,19 @@ export const formatDuration = (totalSeconds) => {
   }
   parts.push(("00" + seconds).slice(-2));
   return parts.join(":");
+};
+
+// https://github.com/react/react/issues/14981#issuecomment-468460187
+export const useErrorHandling = () => {
+  const [_state, setState] = useState();
+  return (handler) =>
+    async (...args) => {
+      try {
+        return await handler(...args);
+      } catch (err) {
+        setState(() => {
+          throw err;
+        });
+      }
+    };
 };

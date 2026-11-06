@@ -100,6 +100,7 @@ body {
   border: none;
   background: none;
   padding: 0;
+  cursor: pointer;
 
   margin-left: 20px;
 
@@ -116,4 +117,19 @@ body {
 
 .page-header-navigate-up-button {
   margin-right: 10px;
+}
+
+.page-play-button {
+  --button-size: 30px;
+
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+
+  width: var(--button-size);
+  height: var(--button-size);
+  line-height: var(--button-size);
+
+  font-size: var(--button-size);
 }
