@@ -12,6 +12,9 @@ export default {
           <li>
             <Link to="/albums">Albums</Link>
           </li>
+          <li>
+            <Link to="/playlists">Playlists</Link>
+          </li>
         </ul>
       </>
     );

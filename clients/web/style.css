@@ -71,25 +71,23 @@ body {
 .list-row {
   height: 1.5lh;
   max-width: 500px;
-}
 
-.album-song-list-row {
   display: flex;
   align-items: center;
+}
+
+.list-row > * {
+  height: 1lh;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .album-song-list-row-track {
   width: 35px;
   text-align: end;
   margin-right: 10px;
-}
-
-.album-song-list-row-song {
-  height: 1lh;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .album-song-list-row-duration {
