@@ -28,7 +28,7 @@ func (s *Server) handleGetPlaylist(w http.ResponseWriter, r *http.Request) error
 	if len(includedTags) == 0 {
 		return clientErrorf("no tags requested")
 	}
-	queryPart1 := "SELECT "
+	queryPart1 := "SELECT ps.oid, "
 	queryPart2s := []string{}
 	for _, tag := range includedTags {
 		queryPart2s = append(queryPart2s, fmt.Sprintf(`s.%s`, quoteDouble(tag)))
@@ -42,16 +42,20 @@ func (s *Server) handleGetPlaylist(w http.ResponseWriter, r *http.Request) error
 	}
 	songsInfo := []any{}
 	for rows.Next() {
+		var entryOID int64
 		tagValues := make([]any, len(includedTags))
-		cols := make([]any, len(includedTags))
+		cols := make([]any, len(includedTags)+1)
+		cols[0] = &entryOID
 		for idx := range includedTags {
-			cols[idx] = &tagValues[idx]
+			cols[idx+1] = &tagValues[idx]
 		}
 		err := rows.Scan(cols...)
 		if err != nil {
 			return fmt.Errorf("scan from db for songs: %w", err)
 		}
-		songInfo := map[string]any{}
+		songInfo := map[string]any{
+			"entry_oid": entryOID,
+		}
 		for idx, name := range includedTags {
 			songInfo[name] = tagValues[idx]
 		}
