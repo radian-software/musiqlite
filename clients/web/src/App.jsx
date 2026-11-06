@@ -21,20 +21,20 @@ class ErrorBoundary extends Component {
 
 export default function App({ page }) {
   return (
-    <ErrorBoundary>
-      <Suspense fallback="Loading page...">
-        <div className="page">
-          <div className="page-header">
-            MusiQLite &ndash; <page.Title />
-          </div>
-          <div className="page-content">
+    <div className="page">
+      <div className="page-header">
+        MusiQLite &ndash; <page.Title />
+      </div>
+      <div className="page-content">
+        <ErrorBoundary>
+          <Suspense fallback="Loading page...">
             <page.Content />
-          </div>
-          <div className="page-footer">
-            <Player />
-          </div>
-        </div>
-      </Suspense>
-    </ErrorBoundary>
+          </Suspense>
+        </ErrorBoundary>
+      </div>
+      <div className="page-footer">
+        <Player />
+      </div>
+    </div>
   );
 }
