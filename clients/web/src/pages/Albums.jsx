@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { parseBlob, useFetchJSON } from "../util";
 
 export default {
+  parentPath: "/",
   Title: function AlbumsPageTitle() {
     return "Albums";
   },

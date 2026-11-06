@@ -1,11 +1,8 @@
 import { Component, Suspense } from "react";
 import Player from "./Player";
-import { Link, useLocation } from "react-router";
+import { Link } from "react-router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faArrowUp,
-  faCircleChevronUp,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCircleChevronUp } from "@fortawesome/free-solid-svg-icons";
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -26,15 +23,11 @@ class ErrorBoundary extends Component {
 }
 
 export default function App({ page }) {
-  const location = useLocation();
   return (
     <div className="page">
       <div className="page-header">
-        {location.pathname !== "/" && (
-          <Link
-            to={location.pathname.replace(/\/[^\/]+\/?$/, "")}
-            className="page-header-navigate-up-button"
-          >
+        {page.parentPath && (
+          <Link to={page.parentPath} className="page-header-navigate-up-button">
             <FontAwesomeIcon icon={faCircleChevronUp} />
           </Link>
         )}

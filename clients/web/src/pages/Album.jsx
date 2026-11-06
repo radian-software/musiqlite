@@ -3,6 +3,7 @@ import { useParams } from "react-router";
 import { formatDuration, parseBlob, useFetchJSON } from "../util";
 
 export default {
+  parentPath: "/albums",
   Title: function AlbumPageTitle() {
     const { albumName } = useParams();
     return `Album: ${albumName}`;
