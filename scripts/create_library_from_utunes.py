@@ -184,7 +184,7 @@ INSERT INTO playlist VALUES
 
 values = []
 for playlist_name, song_ids in utunes_library["playlists"].items():
-    for ordering, song_id in enumerate(song_ids, start=1):
+    for ordering, song_id in enumerate(song_ids):
         values.append(f"({quote(playlist_name)}, {quote(song_id)}, {ordering})")
 print(f"""
 WITH input(playlist_name, song_id, ordering) AS (
